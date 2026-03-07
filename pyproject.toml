@@ -1,13 +1,20 @@
+# Modified in this fork from the upstream project.
 [project]
 name = "openai-llm-benchmark"
 version = "0.1.0"
 description = "Benchmark OpenAI Compatible API endpoints"
 authors = [{ name = "Robert McDermott", email = "robert.c.mcdermott@gmail.com" }, ]
-license = "Apache 2.0"
+license = "Apache-2.0"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "httpx[http2]>=0.28.1",
     "numpy>=2.2.6",
-    "tqdm>=4.67.1",
+    "rich>=14.1.0",
 ]
+
+[project.scripts]
+openai-llm-benchmark = "main:main"
+
+[tool.setuptools]
+py-modules = ["main"]

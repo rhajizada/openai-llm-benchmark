@@ -1,0 +1,9 @@
+This project is based on the upstream "openai-llm-benchmark" work.
+
+Copyright 2025 Robert McDermott
+
+This fork includes modifications, including but not limited to:
+- CLI module rename and invocation updates
+- endpoint URL handling updates
+- richer terminal output and benchmark progress display
+- packaging metadata and script entry point updates
