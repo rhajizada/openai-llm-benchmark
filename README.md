@@ -30,6 +30,7 @@ uv sync
 uv run openai-llm-benchmark \
        --base-url <API_ENDPOINT> \
        --model <MODEL_NAME> \
+       --prompt-file <PROMPT_FILE> \
        --requests <NUM_REQUESTS> \
        --concurrency <CONCURRENCY_LEVEL>
 ```
@@ -70,6 +71,7 @@ uv run openai-llm-benchmark \
 | `--api-key` | Bearer token for authentication | "" |
 | `--model` | Model name to test | "llama3.2" |
 | `--prompt` | User prompt to send | "Hello, world!" |
+| `--prompt-file` | Path to a file containing the prompt text (overrides `--prompt`) | - |
 | `--requests` | Total number of requests | 100 |
 | `--concurrency` | Number of parallel workers | 10 |
 | `--max-tokens` | Maximum tokens per request | 32 |

@@ -40,6 +40,12 @@ from rich.progress import (
 from rich.table import Table
 
 
+def _existing_file(path: str) -> str:
+    if not os.path.isfile(path):
+        raise argparse.ArgumentTypeError(f"prompt file does not exist: {path}")
+    return path
+
+
 def _build_chat_completions_url(base_url: str) -> str:
     base = base_url.rstrip("/")
     if base.endswith("/chat/completions"):
@@ -76,6 +82,11 @@ async def _chat_completion(
 async def _run_once(args: argparse.Namespace) -> None:
     console = Console()
     url = _build_chat_completions_url(args.base_url)
+    prompt_text = args.prompt
+    if args.prompt_file:
+        with open(args.prompt_file, encoding="utf-8") as f:
+            prompt_text = f.read()
+
     headers = {
         "Content-Type": "application/json",
         **({"Authorization": f"Bearer {args.api_key}"} if args.api_key else {}),
@@ -84,7 +95,7 @@ async def _run_once(args: argparse.Namespace) -> None:
         "model": args.model,
         "max_tokens": args.max_tokens,
         "temperature": args.temperature,
-        "messages": [{"role": "user", "content": args.prompt}],
+        "messages": [{"role": "user", "content": prompt_text}],
         "stream": False,
     }
 
@@ -202,7 +213,7 @@ def _report(
     console.print(header)
 
     if ok == 0:
-        console.print("[bold red]No successful requests.[/bold red]\n")
+        console.print("[bold red] No successful requests.[/bold red]\n")
         return
 
     rps = ok / safe_wall
@@ -243,7 +254,17 @@ def _parse() -> argparse.Namespace:
         "--api-key", default="", help="Bearer token if your server needs one"
     )
     p.add_argument("--model", required=True, help="Model name")
-    p.add_argument("--prompt", default="Hello, world!", help="User prompt")
+    p.add_argument(
+        "--prompt",
+        default="Tell me a fun fact about the Roman Empire",
+        help="User prompt",
+    )
+    p.add_argument(
+        "--prompt-file",
+        type=_existing_file,
+        default=None,
+        help="Load prompt text from file (overrides --prompt)",
+    )
     p.add_argument("--requests", type=int, default=100, help="Total number of requests")
     p.add_argument("--concurrency", type=int, default=10, help="Parallel workers")
     p.add_argument("--max-tokens", type=int, default=32, help="max_tokens per request")
