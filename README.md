@@ -11,7 +11,8 @@ A quick-and-dirty load-tester for any OpenAI-style LLM endpoint. This tool allow
 - Measure key performance metrics (requests/sec, tokens/sec, latency)
 - Support for various models and deployments (vLLM, Ollama, etc.)
 - Progress bar visualization (with Rich)
-- Optional response capturing for inspection and analysis
+- Streaming benchmarks with live chunk stats in Rich
+- Optional raw stream capture for inspection and analysis
 
 ## Installation
 
@@ -53,14 +54,14 @@ uv run openai-llm-benchmark \
        --requests 200 --concurrency 16
 ```
 
-### Example: Capturing responses to a file
+### Example: Capturing raw streaming events to a file
 
 ```bash
 uv run openai-llm-benchmark \
        --base-url http://localhost:11434/v1 \
        --model qwen3:14b-fp16 \
        --requests 50 --concurrency 8 \
-       --capture-responses --output-file results/ollama_responses.json
+       --output results/ollama_streams.json
 ```
 
 ## Parameters
@@ -77,7 +78,8 @@ uv run openai-llm-benchmark \
 | `--max-tokens`  | Maximum tokens per request                                       | 32              |
 | `--temperature` | Temperature for sampling (0.0 = deterministic)                   | 0.2             |
 | `--quiet`       | Hide progress bar                                                | False           |
-| `--output`      | File path for captured responses                                 |                 |
+| `--stream-include-usage` | Request usage in stream events when supported             | True            |
+| `--output`      | File path for captured raw streaming events                      |                 |
 
 ## Output
 
@@ -86,12 +88,24 @@ The benchmark will output:
 - Number of successful requests
 - Total execution time
 - Requests per second
-- Tokens per second (if available)
+- Stream chunks received
+- Generated tokens and tokens per second (when usage is emitted, including final-only usage chunks)
+- Average TTFT
+- p50 TTFT
+- p95 TTFT
 - Average latency
 - p50 latency (median)
 - p95 latency
 
-When `--capture-responses` is enabled, all LLM responses will be written to the specified output file in JSON format.
+If any streamed request ends with `finish_reason="length"`, the benchmark prints a warning after the summary to indicate the response was truncated by the output token limit.
+
+During the run, Rich also shows live request progress, active streams, total chunks received, streamed token totals, live tokens/sec, and the latest chunk latency.
+
+Before the benchmark starts, the tool sends a small non-streaming warm-up request with the prompt `hello` and `max_tokens=32` to verify the model is loaded.
+
+The benchmark now sends `stream_options.include_usage=true` by default so OpenAI-compatible backends can return usage in streamed responses. If your provider rejects that field, disable it with `--no-stream-include-usage`.
+
+When `--output` is enabled, each request is written as a JSON array of streaming events, where every event is stored as `[latency_seconds, total_tokens_or_null, raw_chunk_json]`.
 
 ## Requirements
 
