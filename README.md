@@ -65,24 +65,24 @@ uv run openai-llm-benchmark \
 
 ## Parameters
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `--base-url` | Base URL or full chat completions URL (required) | - |
-| `--api-key` | Bearer token for authentication | "" |
-| `--model` | Model name to test | "llama3.2" |
-| `--prompt` | User prompt to send | "Hello, world!" |
-| `--prompt-file` | Path to a file containing the prompt text (overrides `--prompt`) | - |
-| `--requests` | Total number of requests | 100 |
-| `--concurrency` | Number of parallel workers | 10 |
-| `--max-tokens` | Maximum tokens per request | 32 |
-| `--temperature` | Temperature for sampling (0.0 = deterministic) | 0.2 |
-| `--quiet` | Hide progress bar | False |
-| `--capture-responses` | Capture LLM responses and write to file | False |
-| `--output-file` | File path for captured responses | "responses.json" |
+| Parameter       | Description                                                      | Default         |
+| --------------- | ---------------------------------------------------------------- | --------------- |
+| `--base-url`    | Base URL or full chat completions URL (required)                 | -               |
+| `--api-key`     | Bearer token for authentication                                  | ""              |
+| `--model`       | Model name to test                                               | "llama3.2"      |
+| `--prompt`      | User prompt to send                                              | "Hello, world!" |
+| `--prompt-file` | Path to a file containing the prompt text (overrides `--prompt`) | -               |
+| `--requests`    | Total number of requests                                         | 100             |
+| `--concurrency` | Number of parallel workers                                       | 10              |
+| `--max-tokens`  | Maximum tokens per request                                       | 32              |
+| `--temperature` | Temperature for sampling (0.0 = deterministic)                   | 0.2             |
+| `--quiet`       | Hide progress bar                                                | False           |
+| `--output`      | File path for captured responses                                 |                 |
 
 ## Output
 
 The benchmark will output:
+
 - Number of successful requests
 - Total execution time
 - Requests per second

@@ -22,6 +22,7 @@ import argparse
 import asyncio
 import json
 import os
+import pathlib
 import statistics
 import time
 from typing import Any, Dict, List, Optional, Tuple
@@ -60,7 +61,6 @@ async def _chat_completion(
     url: str,
     headers: dict,
     payload: dict,
-    capture_responses: bool,
 ) -> Tuple[Optional[float], Optional[int], Optional[Dict[str, Any]]]:
     """Send one completion request and return (latency, total_tokens, response)."""
     t0 = time.perf_counter()
@@ -74,7 +74,7 @@ async def _chat_completion(
             "total_tokens",
             usage.get("prompt_tokens", 0) + usage.get("completion_tokens", 0),
         )
-        return latency, tokens, data if capture_responses else None
+        return latency, tokens, data
     except Exception:
         return None, None, None
 
@@ -106,13 +106,11 @@ async def _run_once(args: argparse.Namespace) -> None:
 
     async def worker() -> None:
         async with sem:
-            l, t, resp = await _chat_completion(
-                client, url, headers, payload, args.capture_responses
-            )
+            l, t, resp = await _chat_completion(client, url, headers, payload)
             if l is not None:
                 latencies.append(l)
                 tokens.append(t if t is not None else 0)
-                if resp and args.capture_responses:
+                if resp:
                     responses.append(resp)
 
     async with httpx.AsyncClient(http2=True, timeout=None) as client:
@@ -179,8 +177,8 @@ async def _run_once(args: argparse.Namespace) -> None:
 
     _report(latencies, tokens, args.requests, toc - tic)
 
-    if args.capture_responses and responses:
-        _write_responses_to_file(responses, args.output_file)
+    if args.output:
+        _write_responses_to_file(responses, args.output)
 
 
 def _write_responses_to_file(responses: List[Dict[str, Any]], filename: str) -> None:
@@ -276,14 +274,10 @@ def _parse() -> argparse.Namespace:
     )
     p.add_argument("--quiet", action="store_true", help="Hide progress bar")
     p.add_argument(
-        "--capture-responses",
-        action="store_true",
-        help="Capture LLM responses and write to file",
-    )
-    p.add_argument(
-        "--output-file",
-        default="responses.json",
-        help="File to write captured responses (used with --capture-responses)",
+        "--output",
+        default=None,
+        type=pathlib.Path,
+        help="File to write captured responses",
     )
     return p.parse_args()
 
